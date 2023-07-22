@@ -8,7 +8,7 @@ pipeline {
  stages{
   stage("CheckOut GitHub Code")
   {
-   git branch: 'development', credentialsId: 'mjallow2021', url: 'https://github.com/mjallow2021/maven-web-application.git'
+   git branch: 'main', credentialsId: 'mjallow2021', url: 'https://github.com/mjallow2021/my-maven-web-app.git'
  }
  
  stage("Build & Test ") {
