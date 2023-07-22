@@ -1,0 +1,63 @@
+pipeline {
+  agent {
+    docker {
+      image 'abhishekf5/maven-abhishek-docker-agent:v1'
+      args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
+    }
+  }
+ stages{
+  stage("CheckOut GitHub Code")
+  {
+   git branch: 'development', credentialsId: 'mjallow2021', url: 'https://github.com/mjallow2021/maven-web-application.git'
+ }
+ 
+ stage("Build & Test ") {
+ sh "cd my-maven-web-app/maven-web-application-main && mvn clean package"
+ }
+ 
+  
+ stage("SonarQube Report"){
+  environment{
+    SONAR_URL = "http://192.168.0.123:9000"
+  }
+  steps {
+     withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+      sh 'cd MY-MAVEN-WEB-APP/maven-web-application && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
+  }
+ 
+ }
+ /*
+ stage('Static Code Analysis') {
+      environment {
+        SONAR_URL = "http://34.201.116.83:9000"
+      }
+      steps {
+        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+          sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
+        }
+      }
+    }
+
+ stage("UploadArtifactsintoNexus")
+ {
+ sh "${mavenHome}/bin/mvn deploy"
+ }
+ 
+  stage("DeployAppTomcat")
+ {
+  sshagent(['423b5b58-c0a3-42aa-af6e-f0affe1bad0c']) {
+    sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war  ec2-user@15.206.91.239:/opt/apache-tomcat-9.0.34/webapps/" 
+  }
+ }
+ 
+ stage('EmailNotification')
+ {
+ mail bcc: 'simonpeter@nalempinfotech.com', body: '''Build is over
+
+ Thanks,
+ Landmark Technologies,
+ +50259138234.''', cc: 'simonpeter@nalempinfotech.com', from: '', replyTo: '', subject: 'Build is over!!', to: 'mylandmarktech@gmail.com'
+ }
+ */
+ 
+ }
